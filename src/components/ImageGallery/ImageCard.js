@@ -1,8 +1,28 @@
 import { useState } from "react";
 import "./ImageGallery.css";
+import { useDrag, useDrop } from "react-dnd";
 
-const ImageCard = ({ image, setSelectedImages }) => {
+const ItemTypes = {
+  IMAGE_CARD: "imageCard",
+};
+
+const ImageCard = ({ image, setSelectedImages, index, moveImage }) => {
   const [isChecked, setIsChecked] = useState(false);
+
+  const [, ref] = useDrag({
+    type: ItemTypes.IMAGE_CARD,
+    item: { index },
+  });
+
+  const [, drop] = useDrop({
+    accept: ItemTypes.IMAGE_CARD,
+    hover: (draggedItem) => {
+      if (draggedItem.index !== index) {
+        moveImage(draggedItem.index, index);
+        draggedItem.index = index;
+      }
+    },
+  });
 
   const handleImageSelection = (imageId) => {
     setIsChecked(!isChecked);
@@ -16,7 +36,10 @@ const ImageCard = ({ image, setSelectedImages }) => {
     });
   };
   return (
-    <div className={`image-card-container ${isChecked ? "checked" : ""}`}>
+    <div
+      className={`image-card-container ${isChecked ? "checked" : ""}`}
+      ref={(node) => ref(drop(node))}
+    >
       <label htmlFor={image.id}>
         <img className="card-image" src={image.img} alt="" />
       </label>
